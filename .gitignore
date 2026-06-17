@@ -1,0 +1,29 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# 日志、缓存
+logs/
+*.log
+*.tmp
+
+# 数据库迁移缓存（自动生成，无需提交）
+alembic/alembic.ini
+alembic.ini
+
+.manus/
+
+.claude

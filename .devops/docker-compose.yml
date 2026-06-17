@@ -1,0 +1,17 @@
+services:
+  nano_manus_sandbox_dev:
+    # 容器服务构建来源
+    build:
+      context: ../
+      dockerfile: .devops/Dockerfile
+    # 将当前项目目录挂载到工作空间 /workspace
+    volumes:
+      - ../:/sandbox
+    # 端口映射
+    ports:
+      - "2222:22"
+      - "8080:8080"
+    # 容器名字
+    container_name: nano_manus_sandbox_dev
+    # 碰到错误则自动重启
+    restart: always
