@@ -7,7 +7,7 @@ import xmlrpc.client
 from typing import List, Any
 
 from app.interfaces.errors.exceptions import AppException
-from app.models.supervisor import ProcessInfo
+from app.models.supervisor import ProcessInfo, SupervisorActionResult
 
 logger = logging.getLogger(__name__)
 
@@ -84,3 +84,28 @@ class SupervisorService:
             except (TypeError, ValueError) as e:
                 logger.warning(f"进程数据格式异常，已跳过：{p}, err={e}")
         return results
+
+    async def stop_all_process(self) -> SupervisorActionResult:
+        """停止沙箱中Supervisor管理的所有进程服务"""
+        try:
+            result = await self._call_rpc(self.server.supervisor.stopAllProcesses)
+            return SupervisorActionResult(status="stopped", result=result)
+        except Exception as e:
+            raise
+
+    async def shutdown(self) -> SupervisorActionResult:
+        """关闭沙箱中Supervisor服务"""
+        try:
+            result = await self._call_rpc(self.server.supervisor.shutdown)
+            return SupervisorActionResult(status="shutdown", shutdown_result=result)
+        except Exception as e:
+            raise
+
+    async def restart(self) -> SupervisorActionResult:
+        """重启沙箱中Supervisor服务"""
+        try:
+            stop_result = await self._call_rpc(self.server.supervisor.stopAllProcesses)
+            start_result = await self._call_rpc(self.server.supervisor.startAllProcesses)
+            return SupervisorActionResult(status="restarted", stop_result=stop_result , start_result=start_result)
+        except Exception as e:
+            raise
