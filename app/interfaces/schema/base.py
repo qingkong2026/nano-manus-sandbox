@@ -16,8 +16,8 @@ class Response(BaseModel, Generic[T]):
 
     @staticmethod
     def success(msg: str = "success", data: Optional[T] = None) -> "Response[T]":
-        return Response(code=200, msg=msg, data=data if data else {})
+        return Response(code=200, msg=msg, data=data if data is not None  else {})
 
     @staticmethod
     def error(code: int, msg: str = "error", data: Optional[T] = None) -> "Response[T]":
-        return Response(code=code, msg=msg, data=data if data else {})
+        return Response(code=code, msg=msg, data=data if data is not None  else {})
