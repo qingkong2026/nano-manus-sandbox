@@ -1,6 +1,7 @@
 import logging
 import sys
 
+from app.core.middleware import auto_extend_timeout_middleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
@@ -78,6 +79,7 @@ app = FastAPI(
 )
 
 # 添加 CORS 中间键
+app.middleware("http")(auto_extend_timeout_middleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
