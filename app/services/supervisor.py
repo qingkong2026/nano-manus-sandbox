@@ -43,6 +43,9 @@ class UnixStreamTransport(xmlrpc.client.Transport):
 class SupervisorService:
     """Supervisor 服务端"""
 
+    RPC_TIMEOUT = 10
+    GROUP_NAME = "services"
+
     def __init__(self) -> None:
         """构造函数，完成 Supervisor 服务连接"""
         self.rpc_url = "/tmp/supervisor.sock"
@@ -59,7 +62,11 @@ class SupervisorService:
     async def _call_rpc(cls, method, *args) -> Any:
         """根据传递的方法+参数调用rpc方法"""
         try:
-            return await asyncio.to_thread(method, *args)
+            res = await asyncio.wait_for(
+                asyncio.to_thread(method, *args),
+                timeout=cls.RPC_TIMEOUT
+            )
+            return res
         except asyncio.TimeoutError:
             logger.error("RPC 调用超时")
             raise AppException(msg="Supervisor 调用超时")
@@ -67,8 +74,8 @@ class SupervisorService:
             logger.error(f"连接 Supervisor 失败: {e}")
             raise AppException(msg="Supervisor 服务不可用")
         except Exception as e:
-            logger.error(f"RPC 方法调用失败：{str(e)}")
-            raise AppException(msg=f"RPC 方法调用失败：{str(e)}")
+            logger.error(f"RPC 未知失败：{str(e)}", exc_info=True)
+            raise AppException(msg=f"RPC调用失败: {str(e)}")
 
     async def get_all_processes(self) -> List[ProcessInfo]:
         """获取沙箱中所有进程服务的状态信息"""
@@ -88,7 +95,7 @@ class SupervisorService:
     async def stop_all_process(self) -> SupervisorActionResult:
         """停止沙箱中Supervisor管理的所有进程服务"""
         try:
-            result = await self._call_rpc(self.server.supervisor.stopAllProcesses)
+            result = await self._call_rpc(self.server.supervisor.stopProcessGroup, self.GROUP_NAME , False)
             return SupervisorActionResult(status="stopped", result=result)
         except Exception as e:
             raise
@@ -104,8 +111,8 @@ class SupervisorService:
     async def restart(self) -> SupervisorActionResult:
         """重启沙箱中Supervisor服务"""
         try:
-            stop_result = await self._call_rpc(self.server.supervisor.stopAllProcesses)
-            start_result = await self._call_rpc(self.server.supervisor.startAllProcesses)
+            stop_result = await self._call_rpc(self.server.supervisor.stopProcessGroup, self.GROUP_NAME , False)
+            start_result = await self._call_rpc(self.server.supervisor.stopProcessGroup, self.GROUP_NAME, False)
             return SupervisorActionResult(status="restarted", stop_result=stop_result , start_result=start_result)
         except Exception as e:
             raise
