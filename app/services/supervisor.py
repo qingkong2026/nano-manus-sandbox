@@ -244,6 +244,16 @@ class SupervisorService:
         if hasattr(self, "shutdown_timer") and self.shutdown_timer:
             self.shutdown_timer.cancel()
             self.shutdown_timer = None
+        
+        # 4.更新超时配置
+        self.timeout_active = False
+        self.shutdown_time = None
+        self._expand_enabled = True
+
+        return SupervisorTimeoutResult(
+            status="timeout_cancelled",
+            active=False,
+        )
 
     async def get_timeout_status(self) -> SupervisorTimeoutResult:
         """获取当前 Supervisor 的超时状态"""

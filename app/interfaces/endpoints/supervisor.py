@@ -2,7 +2,6 @@ from os import path
 from typing import List
 
 from app.interfaces.schema.supervisor import TimeoutRequest
-from app.models import supervisor
 from fastapi import APIRouter, Depends
 
 from app.interfaces.schema.base import Response
@@ -71,7 +70,7 @@ async def active_timeout(
     supervisor_service.disable_expand()
 
     return Response.success(
-        msg=f"超时销毁已设置，所有服务与沙箱将在{request.timeout_minutes}分钟后销毁",
+        msg=f"超时销毁已设置，所有服务与沙箱将在{result.timeout_minutes}分钟后销毁",
         data=result,
     )
 
@@ -100,13 +99,13 @@ async def cancel_timeout(
         data=result,
     )
 
-@router.post(path="/timeout-status", response_model=Response[SupervisorTimeoutResult])
+@router.get(path="/timeout-status", response_model=Response[SupervisorTimeoutResult])
 async def timeout_status(
     supervisor_service: SupervisorService = Depends(get_supervisor_service)
 ) -> Response[SupervisorTimeoutResult]:
     """获取当前超时定时器状态"""
     result = await supervisor_service.get_timeout_status()
     return Response.success(
-        msg=f"成功获取当前超时定时器状态",
+        msg=f"未激活超时销毁" if  not result.active else f"剩余超时销毁分钟数：{result.remaining_seconds // 60}",
         data=result,
     )
