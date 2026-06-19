@@ -1,3 +1,4 @@
+from os import path
 from typing import List
 
 from app.interfaces.schema.supervisor import TimeoutRequest
@@ -99,7 +100,7 @@ async def cancel_timeout(
         data=result,
     )
 
-
+@router.post(path="/timeout-status", response_model=Response[SupervisorTimeoutResult])
 async def timeout_status(
     supervisor_service: SupervisorService = Depends(get_supervisor_service)
 ) -> Response[SupervisorTimeoutResult]:
